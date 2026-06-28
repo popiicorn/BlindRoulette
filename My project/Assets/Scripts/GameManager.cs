@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using TMPro; // ★追加：TextMeshPro（UI）をプログラムからいじるための準備
 
 public class GameManager : MonoBehaviour
 {
@@ -13,11 +14,14 @@ public class GameManager : MonoBehaviour
     [Header("お宝の生成")]
     public GameObject treasurePrefab;
     public Transform spawnPoint;
+    public float spawnRadiusX = 10f;
+    public float spawnRadiusZ = 2f;
 
-    // ★追加：落下させる範囲の広さをInspectorで調整できるようにする
-    [Header("お宝の落下範囲")]
-    public float spawnRadiusX = 10f; // 横幅のバラつき（ロビーの幅に合わせる）
-    public float spawnRadiusZ = 2f;  // 奥行きのバラつき
+    // ★追加：UIパーツを入れる箱
+    [Header("UI表示")]
+    public TextMeshProUGUI timerText;
+    public TextMeshProUGUI playerMoneyText;
+    public TextMeshProUGUI hostMoneyText;
 
     private int currentTurn = 0;
     private float currentTime;
@@ -32,9 +36,17 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
+        // ★追加：常にお金のUIを最新の数字に書き換える
+        playerMoneyText.text = $"プレイヤー: {player.totalMoney}万円";
+        hostMoneyText.text = $"仕掛け人: {hostMoney}万円";
+
         if (isTimerRunning)
         {
             currentTime -= Time.deltaTime;
+
+            // ★追加：タイマーのUIを更新する
+            timerText.text = $"残り時間: {Mathf.CeilToInt(currentTime)}秒";
+
             if (currentTime <= 0)
             {
                 TimeUp();
@@ -47,7 +59,7 @@ public class GameManager : MonoBehaviour
         currentTurn++;
         if (currentTurn > maxTurns)
         {
-            Debug.Log($"🏁 【ゲーム終了】 最終結果発表！ プレイヤー: {player.totalMoney}万円 / 仕掛け人: {hostMoney}万円");
+            timerText.text = "ゲーム終了！";
             return;
         }
 
@@ -55,10 +67,9 @@ public class GameManager : MonoBehaviour
 
         for (int i = 0; i < treasuresToSpawnNextTurn; i++)
         {
-            // ★修正：さっき追加した範囲（spawnRadius）を使って、ランダムな座標を広く計算する
             float randomX = Random.Range(-spawnRadiusX, spawnRadiusX);
             float randomZ = Random.Range(-spawnRadiusZ, spawnRadiusZ);
-            float randomY = Random.Range(0f, 2f); // 降ってくるタイミングを少しズラすための高さのバラつき
+            float randomY = Random.Range(0f, 2f);
 
             Vector3 randomOffset = new Vector3(randomX, randomY, randomZ);
             Vector3 spawnPos = spawnPoint.position + randomOffset;
@@ -70,13 +81,12 @@ public class GameManager : MonoBehaviour
 
         currentTime = turnTime;
         isTimerRunning = true;
-        Debug.Log($"\n=== 第 {currentTurn} ターン開始！ === (✨2倍部屋は【部屋 {doubleRoom}】だ！)");
     }
 
     void TimeUp()
     {
         isTimerRunning = false;
-        Debug.Log("【タイムアップ！】扉が閉まった！");
+        timerText.text = "審判の刻...！"; // ★追加：0秒になった時の演出テキスト
 
         TreasureBox[] allTreasures = FindObjectsOfType<TreasureBox>();
         foreach (TreasureBox treasure in allTreasures)
@@ -85,7 +95,6 @@ public class GameManager : MonoBehaviour
         }
 
         int explodeRoom = Random.Range(1, 6);
-        Debug.Log($"【審判の瞬間】 💥部屋 {explodeRoom} 💥 が大爆発！！！");
 
         foreach (TreasureBox treasure in allTreasures)
         {
@@ -98,7 +107,6 @@ public class GameManager : MonoBehaviour
             if (treasure.currentRoom == explodeRoom)
             {
                 hostMoney += currentTreasureMoney;
-                Debug.Log($"💀 仕掛け人が【部屋 {explodeRoom}】のお宝を総取り！ ＋{currentTreasureMoney}万円");
                 Destroy(treasure.gameObject);
             }
             else if (treasure.currentRoom != 0)
@@ -108,7 +116,6 @@ public class GameManager : MonoBehaviour
                 {
                     int sharedMoney = currentTreasureMoney / playerCountInRoom;
                     player.totalMoney += sharedMoney;
-                    Debug.Log($"🎉 【山分け】 ＋{sharedMoney}万円獲得！");
                     treasuresToSpawnNextTurn++;
                     Destroy(treasure.gameObject);
                 }
@@ -118,11 +125,6 @@ public class GameManager : MonoBehaviour
         if (player.currentRoom == explodeRoom || player.currentRoom == 0)
         {
             player.totalMoney = 0;
-            Debug.Log($"💀 【死亡】 所持金が 0 円になりました...");
-        }
-        else
-        {
-            Debug.Log($"🎉 【生存】 プレイヤー現在の総所持金: {player.totalMoney}万円！");
         }
 
         Invoke("StartNextTurn", 3f);
