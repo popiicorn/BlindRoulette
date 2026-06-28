@@ -6,7 +6,10 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 7f;
 
     [Header("今いる部屋の番号（0=ロビー）")]
-    public int currentRoom = 0; // 追加：最初は0（ロビー）にしておく
+    public int currentRoom = 0;
+
+    [Header("総所持金")]
+    public int totalMoney = 0; // 追加：プレイヤーのお財布
 
     private Rigidbody rb;
     private Vector3 moveInput;

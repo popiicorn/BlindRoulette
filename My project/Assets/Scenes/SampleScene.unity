@@ -728,6 +728,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 7
   currentRoom: 0
+  totalMoney: 0
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -1024,6 +1025,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   turnTime: 10
   player: {fileID: 390336054}
+  hostMoney: 0
 --- !u!4 &470226208
 Transform:
   m_ObjectHideFlags: 0
@@ -1698,6 +1700,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0df598b69cd13dc4e82c165e176cca05, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  moneyAmount: 1000
+  currentRoom: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
