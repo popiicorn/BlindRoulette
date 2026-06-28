@@ -23,6 +23,12 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI playerMoneyText;
     public TextMeshProUGUI hostMoneyText;
 
+    [Header("爆発エフェクト")]
+    public GameObject explosionPrefab; // プレハブを登録する枠
+
+    // 爆発させる部屋のTransform（位置情報）を準備
+    public Transform[] roomPositions; // 部屋1～5の位置をインスペクターで指定できるようにする
+
     private int currentTurn = 0;
     private float currentTime;
     private bool isTimerRunning = false;
@@ -86,7 +92,14 @@ public class GameManager : MonoBehaviour
     void TimeUp()
     {
         isTimerRunning = false;
-        timerText.text = "審判の刻...！"; // ★追加：0秒になった時の演出テキスト
+        timerText.text = "審判の刻...！";
+
+        // 爆発する部屋をここで1回だけ決める
+        int explodeRoom = Random.Range(1, 6);
+        Debug.Log($"💥部屋 {explodeRoom} 💥 が大爆発！！！");
+
+        // ★追加：爆発エフェクトを生成！
+        Instantiate(explosionPrefab, roomPositions[explodeRoom - 1].position, Quaternion.identity);
 
         TreasureBox[] allTreasures = FindObjectsOfType<TreasureBox>();
         foreach (TreasureBox treasure in allTreasures)
@@ -94,7 +107,7 @@ public class GameManager : MonoBehaviour
             if (treasure.IsCarried()) treasure.Drop(player.currentRoom);
         }
 
-        int explodeRoom = Random.Range(1, 6);
+        // ★削除：ここにあった int explodeRoom = ... の重複宣言を削除しました！
 
         foreach (TreasureBox treasure in allTreasures)
         {
@@ -104,6 +117,7 @@ public class GameManager : MonoBehaviour
                 currentTreasureMoney *= 2;
             }
 
+            // ここで最初に決めた explodeRoom が使われます
             if (treasure.currentRoom == explodeRoom)
             {
                 hostMoney += currentTreasureMoney;
@@ -122,6 +136,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        // ここも最初に決めた explodeRoom が使われます
         if (player.currentRoom == explodeRoom || player.currentRoom == 0)
         {
             player.totalMoney = 0;

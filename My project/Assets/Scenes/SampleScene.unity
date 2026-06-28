@@ -1217,6 +1217,13 @@ MonoBehaviour:
   timerText: {fileID: 2089157377}
   playerMoneyText: {fileID: 666705310}
   hostMoneyText: {fileID: 1396902611}
+  explosionPrefab: {fileID: 4250469683520965448, guid: f93faeb0225c0a74db41de226f1049a6, type: 3}
+  roomPositions:
+  - {fileID: 357711965}
+  - {fileID: 1691411023}
+  - {fileID: 186547917}
+  - {fileID: 1127717900}
+  - {fileID: 450717129}
 --- !u!4 &470226208
 Transform:
   m_ObjectHideFlags: 0
