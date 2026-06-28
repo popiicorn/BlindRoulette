@@ -3,6 +3,8 @@ using TMPro; // ★追加：TextMeshPro（UI）をプログラムからいじる
 
 public class GameManager : MonoBehaviour
 {
+    public CameraShake cameraShake; // カメラシェイクを登録する枠
+
     [Header("ゲーム設定")]
     public int maxTurns = 5;
     public float turnTime = 10f;
@@ -98,8 +100,11 @@ public class GameManager : MonoBehaviour
         int explodeRoom = Random.Range(1, 6);
         Debug.Log($"💥部屋 {explodeRoom} 💥 が大爆発！！！");
 
-        // ★追加：爆発エフェクトを生成！
+        // 爆発エフェクトの生成
         Instantiate(explosionPrefab, roomPositions[explodeRoom - 1].position, Quaternion.identity);
+
+        // ★追加：カメラを揺らす！ (duration:揺らす時間, magnitude:揺れの強さ)
+        cameraShake.PlayShake(0.5f, 0.3f);
 
         TreasureBox[] allTreasures = FindObjectsOfType<TreasureBox>();
         foreach (TreasureBox treasure in allTreasures)
