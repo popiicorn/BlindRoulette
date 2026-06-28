@@ -273,7 +273,7 @@ GameObject:
   m_Component:
   - component: {fileID: 231192241}
   m_Layer: 0
-  m_Name: ------------------------kore
+  m_Name: ------------------------
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -727,6 +727,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 7
+  currentRoom: 0
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -1022,6 +1023,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   turnTime: 10
+  player: {fileID: 390336054}
 --- !u!4 &470226208
 Transform:
   m_ObjectHideFlags: 0
