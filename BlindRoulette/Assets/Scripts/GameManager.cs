@@ -95,15 +95,20 @@ public class GameManager : MonoBehaviour
     {
         isTimerRunning = false;
         timerText.text = "審判の刻...！";
+        // RoomIDの代わりにRoomDetectorを探す！
+        RoomDetector[] allRooms = FindObjectsOfType<RoomDetector>();
 
-        // 爆発する部屋をここで1回だけ決める
-        int explodeRoom = Random.Range(1, 6);
-        Debug.Log($"💥部屋 {explodeRoom} 💥 が大爆発！！！");
+        int randomIndex = Random.Range(0, allRooms.Length);
+        RoomDetector explodeRoomObj = allRooms[randomIndex];
+        int explodeRoomId = explodeRoomObj.roomNumber; // roomNumber を取得！
 
-        // 爆発エフェクトの生成
-        Instantiate(explosionPrefab, roomPositions[explodeRoom - 1].position, Quaternion.identity);
 
-        // ★追加：カメラを揺らす！ (duration:揺らす時間, magnitude:揺れの強さ)
+        Debug.Log($"💥部屋 {explodeRoomId} 💥 が大爆発！！！");
+
+        // 爆発エフェクトをその部屋の位置に生成
+        Instantiate(explosionPrefab, explodeRoomObj.transform.position, Quaternion.identity);
+
+        // ★カメラを揺らす
         cameraShake.PlayShake(0.5f, 0.3f);
 
         TreasureBox[] allTreasures = FindObjectsOfType<TreasureBox>();
@@ -112,8 +117,7 @@ public class GameManager : MonoBehaviour
             if (treasure.IsCarried()) treasure.Drop(player.currentRoom);
         }
 
-        // ★削除：ここにあった int explodeRoom = ... の重複宣言を削除しました！
-
+        // お金の計算処理
         foreach (TreasureBox treasure in allTreasures)
         {
             int currentTreasureMoney = treasure.moneyAmount;
@@ -122,8 +126,8 @@ public class GameManager : MonoBehaviour
                 currentTreasureMoney *= 2;
             }
 
-            // ここで最初に決めた explodeRoom が使われます
-            if (treasure.currentRoom == explodeRoom)
+            // ここで最初に決めた explodeRoomId を使う
+            if (treasure.currentRoom == explodeRoomId)
             {
                 hostMoney += currentTreasureMoney;
                 Destroy(treasure.gameObject);
@@ -141,8 +145,8 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // ここも最初に決めた explodeRoom が使われます
-        if (player.currentRoom == explodeRoom || player.currentRoom == 0)
+        // プレイヤーが爆発した部屋にいたら没収
+        if (player.currentRoom == explodeRoomId || player.currentRoom == 0)
         {
             player.totalMoney = 0;
         }

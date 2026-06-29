@@ -5,6 +5,7 @@ public class RoomDetector : MonoBehaviour
     [Header("この部屋の番号")]
     public int roomNumber;
 
+
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
