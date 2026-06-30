@@ -114,6 +114,9 @@ public class GameManager : MonoBehaviour
         TreasureBox[] allTreasures = FindObjectsOfType<TreasureBox>();
         foreach (TreasureBox treasure in allTreasures)
         {
+            // ★ここに追加：宝物がどこの部屋にいるかログを出してみる
+            Debug.Log($"チェック中の宝物: {treasure.name}, 宝物のいる部屋: {treasure.currentRoom}, 爆発部屋: {explodeRoomId}");
+
             if (treasure.IsCarried()) treasure.Drop(player.currentRoom);
         }
 
@@ -130,6 +133,7 @@ public class GameManager : MonoBehaviour
             if (treasure.currentRoom == explodeRoomId)
             {
                 hostMoney += currentTreasureMoney;
+                treasuresToSpawnNextTurn++;
                 Destroy(treasure.gameObject);
             }
             else if (treasure.currentRoom != 0)
