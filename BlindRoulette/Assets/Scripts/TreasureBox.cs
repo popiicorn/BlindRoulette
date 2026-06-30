@@ -50,17 +50,27 @@ public class TreasureBox : MonoBehaviour
     {
         isCarried = false;
         currentRoom = roomNumber;
+
+        // プレイヤーの親から外す（ここまでは同じ）
+        Transform player = transform.parent;
         transform.SetParent(null);
 
-        // ★修正2：手放したら「重力」をオンに戻し、固い当たり判定も復活させる！
+        // ★追加：物理的な復活処理
         if (rb != null) rb.isKinematic = false;
         foreach (Collider col in GetComponents<Collider>())
         {
             if (!col.isTrigger) col.enabled = true;
         }
 
-        // 以前の「強制的にY:0.5に置く」処理は削除。頭の高さからポトッと自然に床へ落ちます！
-        Debug.Log($"お宝を部屋 {roomNumber} に置きました！");
+        // ★追加：向いている方向にポイっと投げる！
+        if (player != null)
+        {
+            // プレイヤーの正面方向 × 強さ + 少し上に浮かせる力
+            Vector3 throwDirection = player.forward * 5f + Vector3.up * 2f;
+            rb.AddForce(throwDirection, ForceMode.Impulse);
+        }
+
+        Debug.Log($"お宝を部屋 {roomNumber} に投げました！");
     }
 
     public bool IsCarried()
