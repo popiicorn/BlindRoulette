@@ -80,19 +80,41 @@ public class TreasureBox : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        // 【既存の処理】プレイヤーが近づいたときの判定
         if (other.CompareTag("Player"))
         {
             isPlayerInRange = true;
             playerTransform = other.transform;
         }
+
+        // ★【ここを追加！】宝箱が部屋（RoomDetector）に触れたら、その部屋番号を自動で記憶する
+        RoomDetector room = other.GetComponent<RoomDetector>();
+        if (room != null)
+        {
+            currentRoom = room.roomNumber;
+            Debug.Log($"{name} が自動で 【部屋 {currentRoom}】 にあると認識しました！");
+        }
     }
 
     void OnTriggerExit(Collider other)
     {
+        // 【既存の処理】プレイヤーが離れたときの判定
         if (other.CompareTag("Player"))
         {
             isPlayerInRange = false;
             playerTransform = null;
+        }
+
+        // ★【ここを追加！】宝箱が部屋（RoomDetector）から完全に外に出たら、一旦ロビー（0）に戻す
+        RoomDetector room = other.GetComponent<RoomDetector>();
+        if (room != null)
+        {
+            // 部屋のエリアから出たとき、現在覚えている部屋番号と同じなら0（ロビー）に戻す
+            if (currentRoom == room.roomNumber)
+            {
+                currentRoom = 0;
+                Debug.Log($"{name} が部屋から出てロビー（0）に戻りました");
+            }
         }
     }
 }
