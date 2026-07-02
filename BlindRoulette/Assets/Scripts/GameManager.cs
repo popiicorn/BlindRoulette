@@ -13,11 +13,21 @@ public class GameManager : MonoBehaviour
     public PlayerController player;
     public int hostMoney = 0;
 
+    [Header("出現するお宝の種類（ScriptableObjectを登録）")]
+    public TreasureData[] availableTreasures;
+
     [Header("お宝の生成")]
-    public GameObject treasurePrefab;
+    //public GameObject treasurePrefab;
     public Transform spawnPoint;
     public float spawnRadiusX = 10f;
     public float spawnRadiusZ = 2f;
+
+    [Header("お宝の生成設定")]
+    public int initialSpawnCount = 5;         // ★追加：ゲーム開始時（1ターン目）に出す数
+    public int additionalSpawnPerTurn = 0;    // ★追加：2ターン目以降、無条件で追加する数
+
+    // （元の private int treasuresToSpawnNextTurn = 1; は 0 に書き換えておきます）
+    private int treasuresToSpawnNextTurn = 0;
 
     // ★追加：UIパーツを入れる箱
     [Header("UI表示")]
@@ -35,10 +45,13 @@ public class GameManager : MonoBehaviour
     private float currentTime;
     private bool isTimerRunning = false;
     private int doubleRoom = 0;
-    private int treasuresToSpawnNextTurn = 1;
 
     void Start()
     {
+        StartNextTurn();
+
+        // ★追加：最初のターンに出す数をセットしてからゲームスタート！
+        treasuresToSpawnNextTurn = initialSpawnCount;
         StartNextTurn();
     }
 
@@ -73,6 +86,7 @@ public class GameManager : MonoBehaviour
 
         doubleRoom = Random.Range(1, 6);
 
+        // ▼▼▼ ここから書き換え ▼▼▼
         for (int i = 0; i < treasuresToSpawnNextTurn; i++)
         {
             float randomX = Random.Range(-spawnRadiusX, spawnRadiusX);
@@ -82,10 +96,16 @@ public class GameManager : MonoBehaviour
             Vector3 randomOffset = new Vector3(randomX, randomY, randomZ);
             Vector3 spawnPos = spawnPoint.position + randomOffset;
 
-            Instantiate(treasurePrefab, spawnPos, Quaternion.identity);
-        }
+            // ★ここを変更！
+            // くじ引きを引いて、今回出すお宝のデータを決める
+            TreasureData selectedTreasure = ChooseRandomTreasure();
 
-        treasuresToSpawnNextTurn = 1;
+            // 選ばれたお宝データの中にある「prefab（3Dモデル）」を生成する
+            Instantiate(selectedTreasure.prefab, spawnPos, Quaternion.identity);
+        }
+        // ▲▲▲ ここまで ▲▲▲
+
+        treasuresToSpawnNextTurn = additionalSpawnPerTurn;
 
         currentTime = turnTime;
         isTimerRunning = true;
@@ -123,7 +143,8 @@ public class GameManager : MonoBehaviour
         // お金の計算処理
         foreach (TreasureBox treasure in allTreasures)
         {
-            int currentTreasureMoney = treasure.moneyAmount;
+            int currentTreasureMoney = treasure.data.moneyAmount;
+            hostMoney += treasure.data.moneyAmount;
             if (treasure.currentRoom == doubleRoom)
             {
                 currentTreasureMoney *= 2;
@@ -156,5 +177,33 @@ public class GameManager : MonoBehaviour
         }
 
         Invoke("StartNextTurn", 3f);
+    }
+
+    // ★追加：お宝のくじ引き処理
+    private TreasureData ChooseRandomTreasure()
+    {
+        // 1. 登録されている全てのお宝の「重みの合計」を計算する
+        int totalWeight = 0;
+        foreach (TreasureData treasure in availableTreasures)
+        {
+            totalWeight += treasure.spawnWeight;
+        }
+
+        // 2. 0 ～ 合計値-1 の間でランダムな数字（当選番号）を引く
+        int randomValue = Random.Range(0, totalWeight);
+        int currentWeight = 0;
+
+        // 3. 当選番号がどのお宝の範囲に入っているか調べる
+        foreach (TreasureData treasure in availableTreasures)
+        {
+            currentWeight += treasure.spawnWeight;
+            if (randomValue < currentWeight)
+            {
+                return treasure; // 当たったお宝データを返す！
+            }
+        }
+
+        // （保険）万が一計算がズレた場合は、リストの一番目を返す
+        return availableTreasures[0];
     }
 }

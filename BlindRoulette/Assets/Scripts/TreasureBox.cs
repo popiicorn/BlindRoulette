@@ -2,8 +2,8 @@
 
 public class TreasureBox : MonoBehaviour
 {
-    [Header("お宝の金額")]
-    public int moneyAmount = 1000;
+    [Header("お宝のデータ")]
+    public TreasureData data; // ★これを追加！先ほど作ったデータをセットする枠です
 
     [Header("今置いてある部屋の番号（0=ロビー）")]
     public int currentRoom = 0;
@@ -11,14 +11,17 @@ public class TreasureBox : MonoBehaviour
     private bool isCarried = false;
     private bool isPlayerInRange = false;
     private Transform playerTransform;
-
-    // ★追加：物理演算のコンポーネントを操作するための準備
     private Rigidbody rb;
 
     void Start()
     {
-        // ゲーム開始時に自分についているRigidbodyを取得しておく
         rb = GetComponent<Rigidbody>();
+
+        // ★データがセットされているか確認用のログ
+        if (data != null)
+        {
+            Debug.Log($"この宝箱は {data.itemName} です。金額: {data.moneyAmount}");
+        }
     }
 
     void Update()
