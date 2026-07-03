@@ -34,18 +34,22 @@ public class TreasureBox : MonoBehaviour
         {
             isCarried = true;
 
-            // ★修正1：持っている間は「重力」と「物理的な衝突」をオフ（無効化）にする！
             if (rb != null) rb.isKinematic = true;
 
-            // プレイヤーとぶつかってガタガタしないよう、固い方の当たり判定だけを消す
+            // ★ここを修正！：コライダーを消すのではなく、プレイヤーとの衝突を無視させる！
+            Collider playerCol = playerTransform.GetComponent<Collider>();
             foreach (Collider col in GetComponents<Collider>())
             {
-                if (!col.isTrigger) col.enabled = false;
+                if (!col.isTrigger) Physics.IgnoreCollision(col, playerCol, true);
             }
 
             transform.SetParent(playerTransform);
             transform.localPosition = new Vector3(0, 1.5f, 0);
-            Debug.Log("お宝を拾いました！");
+
+            if (data != null)
+            {
+                playerTransform.GetComponent<PlayerController>().SetSpeedMultiplier(data.moveSpeedRate);
+            }
         }
     }
 
@@ -53,27 +57,30 @@ public class TreasureBox : MonoBehaviour
     {
         isCarried = false;
         currentRoom = roomNumber;
-
-        // プレイヤーの親から外す（ここまでは同じ）
         Transform player = transform.parent;
-        transform.SetParent(null);
 
-        // ★追加：物理的な復活処理
-        if (rb != null) rb.isKinematic = false;
-        foreach (Collider col in GetComponents<Collider>())
-        {
-            if (!col.isTrigger) col.enabled = true;
-        }
-
-        // ★追加：向いている方向にポイっと投げる！
+        // ★ここを修正！：投げる時は、プレイヤーとの衝突無視を解除する
         if (player != null)
         {
-            // プレイヤーの正面方向 × 強さ + 少し上に浮かせる力
+            Collider playerCol = player.GetComponent<Collider>();
+            foreach (Collider col in GetComponents<Collider>())
+            {
+                if (!col.isTrigger) Physics.IgnoreCollision(col, playerCol, false);
+            }
+            player.GetComponent<PlayerController>().SetSpeedMultiplier(1.0f);
+        }
+
+        transform.SetParent(null);
+
+        if (rb != null) rb.isKinematic = false;
+
+        // ★ここも削除！：もうColliderのオンオフは不要です
+
+        if (player != null)
+        {
             Vector3 throwDirection = player.forward * 5f + Vector3.up * 2f;
             rb.AddForce(throwDirection, ForceMode.Impulse);
         }
-
-        Debug.Log($"お宝を部屋 {roomNumber} に投げました！");
     }
 
     public bool IsCarried()

@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 621e39064571dda4a9648438ca07274a, type: 3}
-  m_Name: Treasure_Normal
+  m_Name: Treasure_02
   m_EditorClassIdentifier: 
-  itemName: "\u672D\u675F"
-  moneyAmount: 1000
-  moveSpeedRate: 1
-  spawnWeight: 70
-  prefab: {fileID: 3618065813406968794, guid: a3741ef178a89a04fb1446533d23ff4b, type: 3}
+  itemName: "\u91D1\u584A"
+  moneyAmount: 10000
+  moveSpeedRate: 0.5
+  spawnWeight: 30
+  prefab: {fileID: 3618065813406968794, guid: d745800e821937c4bb6593d3a6ee00ce, type: 3}

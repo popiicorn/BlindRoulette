@@ -1011,6 +1011,8 @@ MonoBehaviour:
   availableTreasures:
   - {fileID: 11400000, guid: 047bb16d8dcdab64fa1392b7723d8eab, type: 2}
   - {fileID: 11400000, guid: d4e06fc0741bd52408c41d89b58be43e, type: 2}
+  - {fileID: 11400000, guid: 82eaf8fc1b73ef04d8c136dd1ea4efd8, type: 2}
+  - {fileID: 11400000, guid: 756ee05b7462af44d83cdeeadd530763, type: 2}
   spawnPoint: {fileID: 1595461742}
   spawnRadiusX: 10
   spawnRadiusZ: 2
