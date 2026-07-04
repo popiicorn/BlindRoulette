@@ -46,6 +46,9 @@ public class GameManager : MonoBehaviour
     private bool isTimerRunning = false;
     private int doubleRoom = 0;
 
+    [Header("扉の設定")]
+    public GameObject[] doorObjects; // ★配列（[]）にして複数の扉を入れられるようにする
+
     void Start()
     {
         StartNextTurn();
@@ -115,42 +118,66 @@ public class GameManager : MonoBehaviour
     {
         isTimerRunning = false;
         timerText.text = "審判の刻...！";
-        // RoomIDの代わりにRoomDetectorを探す！
-        RoomDetector[] allRooms = FindObjectsOfType<RoomDetector>();
 
+        // 1. 爆発する部屋を先に決める
+        RoomDetector[] allRooms = FindObjectsOfType<RoomDetector>();
         int randomIndex = Random.Range(0, allRooms.Length);
         RoomDetector explodeRoomObj = allRooms[randomIndex];
-        int explodeRoomId = explodeRoomObj.roomNumber; // roomNumber を取得！
 
+        // 2. 演出付き爆発コルーチンを開始
+        StartCoroutine(ExecuteExplosionSequence(explodeRoomObj));
+    }
 
+    // ★演出と計算を順番に行うコルーチン
+    private System.Collections.IEnumerator ExecuteExplosionSequence(RoomDetector room)
+    {
+        // A. 扉を全部閉じる（★ここを修正：子からAnimatorを探す）
+        foreach (GameObject door in doorObjects)
+        {
+            if (door != null)
+            {
+                // 親の door ではなく、その子供の中から Animator を探す
+                Animator anim = door.GetComponentInChildren<Animator>();
+                if (anim != null)
+                {
+                    anim.SetTrigger("Close");
+                }
+            }
+        }
+
+        yield return new WaitForSeconds(1.0f);
+
+        // B. 爆発する部屋と一致する扉だけを点滅させる
+        bool foundExplodingDoor = false;
+        foreach (GameObject door in doorObjects)
+        {
+            Door doorScript = door.GetComponent<Door>();
+            if (doorScript != null && doorScript.roomNumber == room.roomNumber)
+            {
+                // FlashDoor にも子からRendererを探す処理が必要なら、FlashDoor自体も修正します
+                StartCoroutine(FlashDoor(door));
+                foundExplodingDoor = true;
+            }
+        }
+
+        // 点滅が終わるまで少し待機（FlashDoorが3回点滅するので約1.8秒待つ）
+        if (foundExplodingDoor) yield return new WaitForSeconds(1.8f);
+
+        // C. 爆発処理
+        int explodeRoomId = room.roomNumber;
         Debug.Log($"💥部屋 {explodeRoomId} 💥 が大爆発！！！");
 
-        // 爆発エフェクトをその部屋の位置に生成
-        Instantiate(explosionPrefab, explodeRoomObj.transform.position, Quaternion.identity);
-
-        // ★カメラを揺らす
+        Instantiate(explosionPrefab, room.transform.position, Quaternion.identity);
         cameraShake.PlayShake(0.5f, 0.3f);
 
         TreasureBox[] allTreasures = FindObjectsOfType<TreasureBox>();
         foreach (TreasureBox treasure in allTreasures)
         {
-            // ★ここに追加：宝物がどこの部屋にいるかログを出してみる
-            Debug.Log($"チェック中の宝物: {treasure.name}, 宝物のいる部屋: {treasure.currentRoom}, 爆発部屋: {explodeRoomId}");
-
-            if (treasure.IsCarried()) treasure.Drop(player.currentRoom);
-        }
-
-        // お金の計算処理
-        foreach (TreasureBox treasure in allTreasures)
-        {
             int currentTreasureMoney = treasure.data.moneyAmount;
             hostMoney += treasure.data.moneyAmount;
-            if (treasure.currentRoom == doubleRoom)
-            {
-                currentTreasureMoney *= 2;
-            }
 
-            // ここで最初に決めた explodeRoomId を使う
+            if (treasure.currentRoom == doubleRoom) currentTreasureMoney *= 2;
+
             if (treasure.currentRoom == explodeRoomId)
             {
                 hostMoney += currentTreasureMoney;
@@ -170,7 +197,6 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // プレイヤーが爆発した部屋にいたら没収
         if (player.currentRoom == explodeRoomId || player.currentRoom == 0)
         {
             player.totalMoney = 0;
@@ -205,5 +231,26 @@ public class GameManager : MonoBehaviour
 
         // （保険）万が一計算がズレた場合は、リストの一番目を返す
         return availableTreasures[0];
+    }
+
+    private System.Collections.IEnumerator FlashDoor(GameObject door)
+    {
+        Renderer r = door.GetComponentInChildren<Renderer>();
+        if (r == null)
+        {
+            Debug.LogError(door.name + " の子オブジェクトにRendererが見つかりません！");
+            yield break;
+        }
+
+        Debug.Log(door.name + " を点滅させます！"); // これが出るか確認
+
+        Color originalColor = r.material.color;
+        for (int i = 0; i < 3; i++)
+        {
+            r.material.color = Color.red;
+            yield return new WaitForSeconds(0.3f);
+            r.material.color = originalColor;
+            yield return new WaitForSeconds(0.3f);
+        }
     }
 }
