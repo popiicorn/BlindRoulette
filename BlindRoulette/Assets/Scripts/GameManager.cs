@@ -99,7 +99,7 @@ public class GameManager : MonoBehaviour
 
     void SetupGameScene()
     {
-        // 毎回シーン内のオブジェクトを探し直す
+        // 1. 各種UIやオブジェクトの再検索
         timerText = GameObject.Find("TimerText")?.GetComponent<TextMeshProUGUI>();
         playerMoneyText = GameObject.Find("PlayerMoneyText")?.GetComponent<TextMeshProUGUI>();
         hostMoneyText = GameObject.Find("HostMoneyText")?.GetComponent<TextMeshProUGUI>();
@@ -107,6 +107,18 @@ public class GameManager : MonoBehaviour
 
         GameObject sp = GameObject.Find("SpawnPoint");
         if (sp != null) spawnPoint = sp.transform;
+
+        // ★追加：扉のリストを再検索する
+        // 扉オブジェクトに「Door」というタグを付けておくのが一番安全です！
+        GameObject[] foundDoors = GameObject.FindGameObjectsWithTag("Door");
+        if (foundDoors.Length > 0)
+        {
+            doorObjects = foundDoors;
+        }
+        else
+        {
+            Debug.LogError("タグ 'Door' が付いたオブジェクトが見つかりません！");
+        }
 
         // ゲーム開始
         treasuresToSpawnNextTurn = initialSpawnCount;
@@ -143,18 +155,22 @@ public class GameManager : MonoBehaviour
     void TimeUp()
     {
         isTimerRunning = false;
-        if (timerText != null) timerText.text = "審判の刻...！";
+        timerText.text = "審判の刻...！";
 
+        // 1. 爆発する部屋を決める
         RoomDetector[] allRooms = FindObjectsOfType<RoomDetector>();
-        if (allRooms.Length > 0)
-        {
-            RoomDetector explodeRoomObj = allRooms[Random.Range(0, allRooms.Length)];
-            StartCoroutine(ExecuteExplosionSequence(explodeRoomObj));
-        }
+        int randomIndex = Random.Range(0, allRooms.Length);
+        RoomDetector explodeRoomObj = allRooms[randomIndex];
+
+        // 2. 演出付き爆発コルーチンを開始（完了後にシーン遷移させる）
+        StartCoroutine(ExecuteExplosionSequence(explodeRoomObj));
     }
 
+    // 演出コルーチンにシーン遷移の判定を追加
+    // これが「新しい方」です。この1つだけが存在するようにしてください。
     private System.Collections.IEnumerator ExecuteExplosionSequence(RoomDetector room)
     {
+        // A. 扉を全部閉じる
         foreach (GameObject door in doorObjects)
         {
             if (door != null)
@@ -166,6 +182,7 @@ public class GameManager : MonoBehaviour
 
         yield return new WaitForSeconds(1.0f);
 
+        // B. 爆発する部屋と一致する扉だけを点滅させる
         bool foundExplodingDoor = false;
         foreach (GameObject door in doorObjects)
         {
@@ -179,6 +196,7 @@ public class GameManager : MonoBehaviour
 
         if (foundExplodingDoor) yield return new WaitForSeconds(1.8f);
 
+        // C. 爆発処理
         Instantiate(explosionPrefab, room.transform.position, Quaternion.identity);
         if (cameraShake != null) cameraShake.PlayShake(0.5f, 0.3f);
 
@@ -187,7 +205,6 @@ public class GameManager : MonoBehaviour
         {
             int currentTreasureMoney = treasure.data.moneyAmount;
             hostMoney += treasure.data.moneyAmount;
-
             if (treasure.currentRoom == doubleRoom) currentTreasureMoney *= 2;
 
             if (treasure.currentRoom == room.roomNumber)
@@ -213,7 +230,9 @@ public class GameManager : MonoBehaviour
             player.totalMoney = 0;
         }
 
-        Invoke("StartNextTurn", 3f);
+        // ここが修正後の最後です
+        yield return new WaitForSeconds(3.0f);
+        CheckTurnResult();
     }
 
     private TreasureData ChooseRandomTreasure()
@@ -262,6 +281,30 @@ public class GameManager : MonoBehaviour
             yield return new WaitForSeconds(0.3f);
             r.material.color = originalColor;
             yield return new WaitForSeconds(0.3f);
+        }
+    }
+
+
+
+    // ゲーム開始ボタンが押された時などに呼ぶ
+    public void StartGameFromSelection()
+    {
+        // ターンをカウントアップして、GameSceneへ移動する
+        // currentTurn++; // ターンを進める
+        SceneManager.LoadScene("GameScene");
+    }
+
+    void CheckTurnResult()
+    {
+        if (currentTurn >= maxTurns)
+        {
+            // 5ターン終了！リザルトへ
+            SceneManager.LoadScene("ResultScene");
+        }
+        else
+        {
+            // 抽選へ
+            SceneManager.LoadScene("SelectionScene");
         }
     }
 }
