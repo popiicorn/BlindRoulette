@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
-using TMPro; // ★追加：TextMeshPro（UI）をプログラムからいじるための準備
+using TMPro;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public CameraShake cameraShake; // カメラシェイクを登録する枠
+    public CameraShake cameraShake;
 
     [Header("ゲーム設定")]
     public int maxTurns = 5;
@@ -13,33 +14,27 @@ public class GameManager : MonoBehaviour
     public PlayerController player;
     public int hostMoney = 0;
 
-    [Header("出現するお宝の種類（ScriptableObjectを登録）")]
+    [Header("出現するお宝の種類")]
     public TreasureData[] availableTreasures;
 
     [Header("お宝の生成")]
-    //public GameObject treasurePrefab;
     public Transform spawnPoint;
     public float spawnRadiusX = 10f;
     public float spawnRadiusZ = 2f;
 
     [Header("お宝の生成設定")]
-    public int initialSpawnCount = 5;         // ★追加：ゲーム開始時（1ターン目）に出す数
-    public int additionalSpawnPerTurn = 0;    // ★追加：2ターン目以降、無条件で追加する数
-
-    // （元の private int treasuresToSpawnNextTurn = 1; は 0 に書き換えておきます）
+    public int initialSpawnCount = 5;
+    public int additionalSpawnPerTurn = 0;
     private int treasuresToSpawnNextTurn = 0;
 
-    // ★追加：UIパーツを入れる箱
     [Header("UI表示")]
     public TextMeshProUGUI timerText;
     public TextMeshProUGUI playerMoneyText;
     public TextMeshProUGUI hostMoneyText;
 
     [Header("爆発エフェクト")]
-    public GameObject explosionPrefab; // プレハブを登録する枠
-
-    // 爆発させる部屋のTransform（位置情報）を準備
-    public Transform[] roomPositions; // 部屋1～5の位置をインスペクターで指定できるようにする
+    public GameObject explosionPrefab;
+    public Transform[] roomPositions;
 
     private int currentTurn = 0;
     private float currentTime;
@@ -47,35 +42,75 @@ public class GameManager : MonoBehaviour
     private int doubleRoom = 0;
 
     [Header("扉の設定")]
-    public GameObject[] doorObjects; // ★配列（[]）にして複数の扉を入れられるようにする
+    public GameObject[] doorObjects;
+
+    public static GameManager Instance;
+
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     void Start()
     {
-        StartNextTurn();
-
-        // ★追加：最初のターンに出す数をセットしてからゲームスタート！
-        treasuresToSpawnNextTurn = initialSpawnCount;
-        StartNextTurn();
+        // 最初のシーンで起動したとき、既にGameSceneなら即セットアップ
+        if (SceneManager.GetActiveScene().name == "GameScene")
+        {
+            SetupGameScene();
+        }
     }
 
     void Update()
     {
-        // ★追加：常にお金のUIを最新の数字に書き換える
-        playerMoneyText.text = $"プレイヤー: {player.totalMoney}万円";
-        hostMoneyText.text = $"仕掛け人: {hostMoney}万円";
+        // GameScene以外、またはタイマー停止中は処理しない
+        if (SceneManager.GetActiveScene().name != "GameScene" || !isTimerRunning) return;
 
-        if (isTimerRunning)
+        currentTime -= Time.deltaTime;
+
+        if (timerText != null) timerText.text = $"残り時間: {Mathf.CeilToInt(currentTime)}秒";
+        if (playerMoneyText != null) playerMoneyText.text = $"プレイヤー: {player.totalMoney}万円";
+        if (hostMoneyText != null) hostMoneyText.text = $"仕掛け人: {hostMoney}万円";
+
+        if (currentTime <= 0)
         {
-            currentTime -= Time.deltaTime;
-
-            // ★追加：タイマーのUIを更新する
-            timerText.text = $"残り時間: {Mathf.CeilToInt(currentTime)}秒";
-
-            if (currentTime <= 0)
-            {
-                TimeUp();
-            }
+            TimeUp();
         }
+    }
+
+    // シーン切り替え時に自動実行される
+    void OnEnable() { SceneManager.sceneLoaded += OnSceneLoaded; }
+    void OnDisable() { SceneManager.sceneLoaded -= OnSceneLoaded; }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == "GameScene")
+        {
+            SetupGameScene();
+        }
+    }
+
+    void SetupGameScene()
+    {
+        // 毎回シーン内のオブジェクトを探し直す
+        timerText = GameObject.Find("TimerText")?.GetComponent<TextMeshProUGUI>();
+        playerMoneyText = GameObject.Find("PlayerMoneyText")?.GetComponent<TextMeshProUGUI>();
+        hostMoneyText = GameObject.Find("HostMoneyText")?.GetComponent<TextMeshProUGUI>();
+        player = FindObjectOfType<PlayerController>();
+
+        GameObject sp = GameObject.Find("SpawnPoint");
+        if (sp != null) spawnPoint = sp.transform;
+
+        // ゲーム開始
+        treasuresToSpawnNextTurn = initialSpawnCount;
+        StartNextTurn();
     }
 
     void StartNextTurn()
@@ -83,33 +118,24 @@ public class GameManager : MonoBehaviour
         currentTurn++;
         if (currentTurn > maxTurns)
         {
-            timerText.text = "ゲーム終了！";
+            if (timerText != null) timerText.text = "ゲーム終了！";
             return;
         }
 
         doubleRoom = Random.Range(1, 6);
 
-        // ▼▼▼ ここから書き換え ▼▼▼
         for (int i = 0; i < treasuresToSpawnNextTurn; i++)
         {
             float randomX = Random.Range(-spawnRadiusX, spawnRadiusX);
             float randomZ = Random.Range(-spawnRadiusZ, spawnRadiusZ);
             float randomY = Random.Range(0f, 2f);
 
-            Vector3 randomOffset = new Vector3(randomX, randomY, randomZ);
-            Vector3 spawnPos = spawnPoint.position + randomOffset;
-
-            // ★ここを変更！
-            // くじ引きを引いて、今回出すお宝のデータを決める
+            Vector3 spawnPos = (spawnPoint != null ? spawnPoint.position : Vector3.zero) + new Vector3(randomX, randomY, randomZ);
             TreasureData selectedTreasure = ChooseRandomTreasure();
-
-            // 選ばれたお宝データの中にある「prefab（3Dモデル）」を生成する
             Instantiate(selectedTreasure.prefab, spawnPos, Quaternion.identity);
         }
-        // ▲▲▲ ここまで ▲▲▲
 
         treasuresToSpawnNextTurn = additionalSpawnPerTurn;
-
         currentTime = turnTime;
         isTimerRunning = true;
     }
@@ -117,58 +143,44 @@ public class GameManager : MonoBehaviour
     void TimeUp()
     {
         isTimerRunning = false;
-        timerText.text = "審判の刻...！";
+        if (timerText != null) timerText.text = "審判の刻...！";
 
-        // 1. 爆発する部屋を先に決める
         RoomDetector[] allRooms = FindObjectsOfType<RoomDetector>();
-        int randomIndex = Random.Range(0, allRooms.Length);
-        RoomDetector explodeRoomObj = allRooms[randomIndex];
-
-        // 2. 演出付き爆発コルーチンを開始
-        StartCoroutine(ExecuteExplosionSequence(explodeRoomObj));
+        if (allRooms.Length > 0)
+        {
+            RoomDetector explodeRoomObj = allRooms[Random.Range(0, allRooms.Length)];
+            StartCoroutine(ExecuteExplosionSequence(explodeRoomObj));
+        }
     }
 
-    // ★演出と計算を順番に行うコルーチン
     private System.Collections.IEnumerator ExecuteExplosionSequence(RoomDetector room)
     {
-        // A. 扉を全部閉じる（★ここを修正：子からAnimatorを探す）
         foreach (GameObject door in doorObjects)
         {
             if (door != null)
             {
-                // 親の door ではなく、その子供の中から Animator を探す
                 Animator anim = door.GetComponentInChildren<Animator>();
-                if (anim != null)
-                {
-                    anim.SetTrigger("Close");
-                }
+                if (anim != null) anim.SetTrigger("Close");
             }
         }
 
         yield return new WaitForSeconds(1.0f);
 
-        // B. 爆発する部屋と一致する扉だけを点滅させる
         bool foundExplodingDoor = false;
         foreach (GameObject door in doorObjects)
         {
             Door doorScript = door.GetComponent<Door>();
             if (doorScript != null && doorScript.roomNumber == room.roomNumber)
             {
-                // FlashDoor にも子からRendererを探す処理が必要なら、FlashDoor自体も修正します
                 StartCoroutine(FlashDoor(door));
                 foundExplodingDoor = true;
             }
         }
 
-        // 点滅が終わるまで少し待機（FlashDoorが3回点滅するので約1.8秒待つ）
         if (foundExplodingDoor) yield return new WaitForSeconds(1.8f);
 
-        // C. 爆発処理
-        int explodeRoomId = room.roomNumber;
-        Debug.Log($"💥部屋 {explodeRoomId} 💥 が大爆発！！！");
-
         Instantiate(explosionPrefab, room.transform.position, Quaternion.identity);
-        cameraShake.PlayShake(0.5f, 0.3f);
+        if (cameraShake != null) cameraShake.PlayShake(0.5f, 0.3f);
 
         TreasureBox[] allTreasures = FindObjectsOfType<TreasureBox>();
         foreach (TreasureBox treasure in allTreasures)
@@ -178,7 +190,7 @@ public class GameManager : MonoBehaviour
 
             if (treasure.currentRoom == doubleRoom) currentTreasureMoney *= 2;
 
-            if (treasure.currentRoom == explodeRoomId)
+            if (treasure.currentRoom == room.roomNumber)
             {
                 hostMoney += currentTreasureMoney;
                 treasuresToSpawnNextTurn++;
@@ -186,18 +198,17 @@ public class GameManager : MonoBehaviour
             }
             else if (treasure.currentRoom != 0)
             {
-                int playerCountInRoom = (player.currentRoom == treasure.currentRoom) ? 1 : 0;
+                int playerCountInRoom = (player != null && player.currentRoom == treasure.currentRoom) ? 1 : 0;
                 if (playerCountInRoom > 0)
                 {
-                    int sharedMoney = currentTreasureMoney / playerCountInRoom;
-                    player.totalMoney += sharedMoney;
+                    player.totalMoney += (currentTreasureMoney / playerCountInRoom);
                     treasuresToSpawnNextTurn++;
                     Destroy(treasure.gameObject);
                 }
             }
         }
 
-        if (player.currentRoom == explodeRoomId || player.currentRoom == 0)
+        if (player != null && (player.currentRoom == room.roomNumber || player.currentRoom == 0))
         {
             player.totalMoney = 0;
         }
@@ -205,44 +216,44 @@ public class GameManager : MonoBehaviour
         Invoke("StartNextTurn", 3f);
     }
 
-    // ★追加：お宝のくじ引き処理
     private TreasureData ChooseRandomTreasure()
     {
-        // 1. 登録されている全てのお宝の「重みの合計」を計算する
+        // ★修正：配列が空ならエラーを回避し、デバッグログを出す
+        if (availableTreasures == null || availableTreasures.Length == 0)
+        {
+            Debug.LogError("お宝データが設定されていません！インスペクターを確認してください。");
+            return null; // または適当な代替品を返す
+        }
+
         int totalWeight = 0;
         foreach (TreasureData treasure in availableTreasures)
         {
-            totalWeight += treasure.spawnWeight;
+            // データがnullでないか確認
+            if (treasure != null) totalWeight += treasure.spawnWeight;
         }
 
-        // 2. 0 ～ 合計値-1 の間でランダムな数字（当選番号）を引く
+        // 重みが0だった場合の回避
+        if (totalWeight <= 0) return availableTreasures[0];
+
         int randomValue = Random.Range(0, totalWeight);
         int currentWeight = 0;
 
-        // 3. 当選番号がどのお宝の範囲に入っているか調べる
         foreach (TreasureData treasure in availableTreasures)
         {
+            if (treasure == null) continue;
             currentWeight += treasure.spawnWeight;
             if (randomValue < currentWeight)
             {
-                return treasure; // 当たったお宝データを返す！
+                return treasure;
             }
         }
-
-        // （保険）万が一計算がズレた場合は、リストの一番目を返す
         return availableTreasures[0];
     }
 
     private System.Collections.IEnumerator FlashDoor(GameObject door)
     {
         Renderer r = door.GetComponentInChildren<Renderer>();
-        if (r == null)
-        {
-            Debug.LogError(door.name + " の子オブジェクトにRendererが見つかりません！");
-            yield break;
-        }
-
-        Debug.Log(door.name + " を点滅させます！"); // これが出るか確認
+        if (r == null) yield break;
 
         Color originalColor = r.material.color;
         for (int i = 0; i < 3; i++)
