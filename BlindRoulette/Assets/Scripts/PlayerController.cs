@@ -8,9 +8,7 @@ public class PlayerController : MonoBehaviour
     [Header("今いる部屋の番号（0=ロビー）")]
     public int currentRoom = 0;
 
-    [Header("総所持金")]
-    public int totalMoney = 0; // 追加：プレイヤーのお財布
-
+    
     // ★追加：現在の速度倍率（初期値は1.0、つまり100%のスピード）
     private float currentSpeedMultiplier = 1.0f;
 
@@ -20,6 +18,27 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        RoomDetector room = other.GetComponent<RoomDetector>();
+        if (room != null)
+        {
+            currentRoom = room.roomNumber;
+            Debug.Log($"プレイヤーが 【部屋 {currentRoom}】 に入りました！");
+        }
+    }
+
+    // ★追加：部屋から出たときの判定処理
+    void OnTriggerExit(Collider other)
+    {
+        RoomDetector room = other.GetComponent<RoomDetector>();
+        if (room != null && currentRoom == room.roomNumber)
+        {
+            currentRoom = 0;
+            Debug.Log("プレイヤーが部屋から出てロビー（0）に戻りました");
+        }
     }
 
     void Update()
@@ -44,4 +63,6 @@ public class PlayerController : MonoBehaviour
         currentSpeedMultiplier = multiplier;
         Debug.Log($"プレイヤーの速度倍率が {multiplier} に変更されました！");
     }
+
+
 }

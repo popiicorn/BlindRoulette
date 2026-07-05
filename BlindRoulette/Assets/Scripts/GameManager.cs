@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
     [Header("プレイヤーの情報")]
     public PlayerController player;
     public int hostMoney = 0;
+    public int playerTotalMoney = 0; // ★ここに移動しました！
 
     [Header("出現するお宝の種類")]
     public TreasureData[] availableTreasures;
@@ -76,8 +77,8 @@ public class GameManager : MonoBehaviour
         currentTime -= Time.deltaTime;
 
         if (timerText != null) timerText.text = $"残り時間: {Mathf.CeilToInt(currentTime)}秒";
-        if (playerMoneyText != null) playerMoneyText.text = $"プレイヤー: {player.totalMoney}万円";
-        if (hostMoneyText != null) hostMoneyText.text = $"仕掛け人: {hostMoney}万円";
+        if (playerMoneyText != null) playerMoneyText.text = $"プレイヤー: {playerTotalMoney}円";
+        if (hostMoneyText != null) hostMoneyText.text = $"仕掛け人: {hostMoney}円";
 
         if (currentTime <= 0)
         {
@@ -201,36 +202,37 @@ public class GameManager : MonoBehaviour
         if (cameraShake != null) cameraShake.PlayShake(0.5f, 0.3f);
 
         TreasureBox[] allTreasures = FindObjectsOfType<TreasureBox>();
+        // プレイヤーの人数をカウント（ここでは1人＝プレイヤーのみと仮定します）
+        int playerMemberCount = 1;
+
         foreach (TreasureBox treasure in allTreasures)
         {
-            int currentTreasureMoney = treasure.data.moneyAmount;
-            hostMoney += treasure.data.moneyAmount;
-            if (treasure.currentRoom == doubleRoom) currentTreasureMoney *= 2;
+            int amount = treasure.data.moneyAmount;
 
+            // 1. 爆発する部屋にあるお宝は、今回は一切無視（0円とする）
             if (treasure.currentRoom == room.roomNumber)
             {
-                hostMoney += currentTreasureMoney;
-                treasuresToSpawnNextTurn++;
+                Destroy(treasure.gameObject);
+                Debug.Log($"爆発エリアの宝は消滅: {amount}");
+            }
+            // 2. 爆発しない部屋にある場合
+            else if (treasure.currentRoom != 0 && treasure.currentRoom == player.currentRoom)
+            {
+                // 端数繰り上げの計算（Mathf.CeilToInt を使用）
+                int reward = Mathf.CeilToInt((float)amount / playerMemberCount);
+
+                playerTotalMoney += reward;
+                Debug.Log($"プレイヤーが {reward} 万円獲得！ (元のお宝: {amount} / 人数: {playerMemberCount})");
+
                 Destroy(treasure.gameObject);
             }
-            else if (treasure.currentRoom != 0)
+            // 3. それ以外（プレイヤーがいない部屋の宝など）も今回は獲得なし
+            else
             {
-                int playerCountInRoom = (player != null && player.currentRoom == treasure.currentRoom) ? 1 : 0;
-                if (playerCountInRoom > 0)
-                {
-                    player.totalMoney += (currentTreasureMoney / playerCountInRoom);
-                    treasuresToSpawnNextTurn++;
-                    Destroy(treasure.gameObject);
-                }
+                Destroy(treasure.gameObject);
             }
         }
 
-        if (player != null && (player.currentRoom == room.roomNumber || player.currentRoom == 0))
-        {
-            player.totalMoney = 0;
-        }
-
-        // ここが修正後の最後です
         yield return new WaitForSeconds(3.0f);
         CheckTurnResult();
     }
