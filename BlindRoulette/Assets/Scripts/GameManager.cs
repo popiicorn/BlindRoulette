@@ -106,6 +106,12 @@ public class GameManager : MonoBehaviour
         hostMoneyText = GameObject.Find("HostMoneyText")?.GetComponent<TextMeshProUGUI>();
         player = FindObjectOfType<PlayerController>();
 
+        cameraShake = FindObjectOfType<CameraShake>();
+        if (cameraShake == null)
+        {
+            Debug.LogWarning("シーン内に CameraShake が見つかりませんでした！");
+        }
+
         GameObject sp = GameObject.Find("SpawnPoint");
         if (sp != null) spawnPoint = sp.transform;
 
