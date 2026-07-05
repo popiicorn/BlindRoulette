@@ -158,6 +158,34 @@ public class GameManager : MonoBehaviour
         isTimerRunning = false;
         timerText.text = "審判の刻...！";
 
+        // 1. 爆発する部屋を「部屋1」に固定する
+        RoomDetector explodeRoomObj = null;
+        RoomDetector[] allRooms = FindObjectsOfType<RoomDetector>();
+
+        foreach (var room in allRooms)
+        {
+            if (room.roomNumber == 1) // 部屋番号が1のものを見つける
+            {
+                explodeRoomObj = room;
+                break;
+            }
+        }
+
+        // もし部屋1が見つからない場合を考慮して、念のためランダムも残す
+        if (explodeRoomObj == null)
+        {
+            int randomIndex = Random.Range(0, allRooms.Length);
+            explodeRoomObj = allRooms[randomIndex];
+        }
+
+        // 2. 演出付き爆発コルーチンを開始
+        StartCoroutine(ExecuteExplosionSequence(explodeRoomObj));
+
+
+        /*↓ランダム
+        isTimerRunning = false;
+        timerText.text = "審判の刻...！";
+
         // 1. 爆発する部屋を決める
         RoomDetector[] allRooms = FindObjectsOfType<RoomDetector>();
         int randomIndex = Random.Range(0, allRooms.Length);
@@ -165,6 +193,7 @@ public class GameManager : MonoBehaviour
 
         // 2. 演出付き爆発コルーチンを開始（完了後にシーン遷移させる）
         StartCoroutine(ExecuteExplosionSequence(explodeRoomObj));
+        */
     }
 
     // 演出コルーチンにシーン遷移の判定を追加
