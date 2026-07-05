@@ -258,44 +258,49 @@ public class GameManager : MonoBehaviour
         Instantiate(explosionPrefab, room.transform.position, Quaternion.identity);
         if (cameraShake != null) cameraShake.PlayShake(0.5f, 0.3f);
 
-        // ★ここに追加！
-        if (player != null)
+        // 1. プレイヤーの判定（部屋またはロビーにいる場合）
+        if (player != null && (player.currentRoom == room.roomNumber || player.currentRoom == 0))
         {
-            // 爆発した部屋にいる、または廊下・ロビー（部屋0）にいるなら没収
-            if (player.currentRoom == room.roomNumber || player.currentRoom == 0)
+            playerTotalMoney = 0;
+            Debug.Log("爆発に巻き込まれた！所持金が没収されました！");
+
+            Rigidbody rb = player.GetComponent<Rigidbody>();
+            if (rb != null)
             {
-                playerTotalMoney = 0;
-                Debug.Log("爆発に巻き込まれた、または逃げ場を失った！所持金が0になりました！");
+                // 物理演算を有効にして真上に力を加える
+                rb.isKinematic = false;
+                rb.AddForce(Vector3.up * 15f + new Vector3(Random.Range(-5f, 5f), 0, Random.Range(-5f, 5f)), ForceMode.Impulse);
             }
         }
-        // ★ここまで
 
+        // 2. お宝の判定
         TreasureBox[] allTreasures = FindObjectsOfType<TreasureBox>();
-        int playerMemberCount = 1;
-
         foreach (TreasureBox treasure in allTreasures)
         {
-            int amount = treasure.data.moneyAmount;
+            if (treasure.IsCarried()) treasure.currentRoom = player.currentRoom;
 
-            // ★重要：持たれている宝の場合、今の部屋を強制的にプレイヤーの部屋にする
-            if (treasure.IsCarried())
+            // 爆発対象：指定の部屋、またはロビー（部屋0）にいる場合
+            if (treasure.currentRoom == room.roomNumber || treasure.currentRoom == 0)
             {
-                treasure.currentRoom = player.currentRoom;
-            }
+                // ★追加：吹き飛ばす処理
+                Rigidbody rb = treasure.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.isKinematic = false;
+                    // 爆発の力を加える（プレイヤーより少し強めに飛ばすと面白いです）
+                    rb.AddForce(Vector3.up * 15f + new Vector3(Random.Range(-5f, 5f), 0, Random.Range(-5f, 5f)), ForceMode.Impulse);
+                }
 
-            // 1. 爆発する部屋にあるお宝（持たれていても部屋が一致すれば爆発）
-            if (treasure.currentRoom == room.roomNumber)
-            {
-                Destroy(treasure.gameObject);
-                Debug.Log($"爆発エリアの宝は消滅: {amount}");
+                // 吹き飛ばした後、少し遅らせて消滅させる（吹き飛ぶ見た目を作るため）
+                //Destroy(treasure.gameObject, 1.0f);
+                Debug.Log("宝箱が爆風で吹き飛んだ！");
             }
-            // 2. 爆発しない部屋にある場合（持っている宝もここで判定される）
-            else if (treasure.currentRoom != 0 && treasure.currentRoom == player.currentRoom)
+            // 爆発しない部屋にいる宝は獲得
+            else if (treasure.currentRoom == player.currentRoom)
             {
-                int reward = Mathf.CeilToInt((float)amount / playerMemberCount);
-                playerTotalMoney += reward;
-                Debug.Log($"プレイヤーが {reward} 万円獲得！ (持っている宝を含む)");
+                playerTotalMoney += treasure.data.moneyAmount;
                 Destroy(treasure.gameObject);
+                Debug.Log("宝箱を獲得！");
             }
             else
             {
