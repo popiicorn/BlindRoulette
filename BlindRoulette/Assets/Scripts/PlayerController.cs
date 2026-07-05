@@ -53,6 +53,16 @@ public class PlayerController : MonoBehaviour
         float moveX = Input.GetAxisRaw("Horizontal");
         float moveZ = Input.GetAxisRaw("Vertical");
         moveInput = new Vector3(moveX, 0f, moveZ).normalized;
+
+        // ★追加：移動入力があるときだけキャラクターをその方向へ向かせる
+        if (moveInput.magnitude > 0.1f)
+        {
+            // 向きたい方向を計算
+            Quaternion targetRotation = Quaternion.LookRotation(moveInput);
+
+            // スムーズに回転させる（0.15fは回転の滑らかさです。大きいほどキビキビ動きます）
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 0.15f);
+        }
     }
 
     void FixedUpdate()
