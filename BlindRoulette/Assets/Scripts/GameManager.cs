@@ -202,31 +202,32 @@ public class GameManager : MonoBehaviour
         if (cameraShake != null) cameraShake.PlayShake(0.5f, 0.3f);
 
         TreasureBox[] allTreasures = FindObjectsOfType<TreasureBox>();
-        // プレイヤーの人数をカウント（ここでは1人＝プレイヤーのみと仮定します）
         int playerMemberCount = 1;
 
         foreach (TreasureBox treasure in allTreasures)
         {
             int amount = treasure.data.moneyAmount;
 
-            // 1. 爆発する部屋にあるお宝は、今回は一切無視（0円とする）
+            // ★重要：持たれている宝の場合、今の部屋を強制的にプレイヤーの部屋にする
+            if (treasure.IsCarried())
+            {
+                treasure.currentRoom = player.currentRoom;
+            }
+
+            // 1. 爆発する部屋にあるお宝（持たれていても部屋が一致すれば爆発）
             if (treasure.currentRoom == room.roomNumber)
             {
                 Destroy(treasure.gameObject);
                 Debug.Log($"爆発エリアの宝は消滅: {amount}");
             }
-            // 2. 爆発しない部屋にある場合
+            // 2. 爆発しない部屋にある場合（持っている宝もここで判定される）
             else if (treasure.currentRoom != 0 && treasure.currentRoom == player.currentRoom)
             {
-                // 端数繰り上げの計算（Mathf.CeilToInt を使用）
                 int reward = Mathf.CeilToInt((float)amount / playerMemberCount);
-
                 playerTotalMoney += reward;
-                Debug.Log($"プレイヤーが {reward} 万円獲得！ (元のお宝: {amount} / 人数: {playerMemberCount})");
-
+                Debug.Log($"プレイヤーが {reward} 万円獲得！ (持っている宝を含む)");
                 Destroy(treasure.gameObject);
             }
-            // 3. それ以外（プレイヤーがいない部屋の宝など）も今回は獲得なし
             else
             {
                 Destroy(treasure.gameObject);

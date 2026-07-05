@@ -38,6 +38,13 @@ public class PlayerController : MonoBehaviour
         {
             currentRoom = 0;
             Debug.Log("プレイヤーが部屋から出てロビー（0）に戻りました");
+
+            // ★追加：持っているお宝にも「ロビー（0）に出たよ」と伝える
+            TreasureBox carriedTreasure = GetComponentInChildren<TreasureBox>();
+            if (carriedTreasure != null)
+            {
+                carriedTreasure.UpdateRoom(0); // 0はロビー
+            }
         }
     }
 

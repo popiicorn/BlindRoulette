@@ -127,4 +127,11 @@ public class TreasureBox : MonoBehaviour
             }
         }
     }
+
+    // TreasureBox.cs に追加
+    public void UpdateRoom(int roomNumber)
+    {
+        currentRoom = roomNumber;
+        Debug.Log($"{name} がプレイヤーに持たれたまま 【部屋 {currentRoom}】 に入りました！");
+    }
 }
