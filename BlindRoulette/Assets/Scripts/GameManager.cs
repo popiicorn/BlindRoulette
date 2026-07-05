@@ -100,6 +100,15 @@ public class GameManager : MonoBehaviour
             isSetup = false;
             SetupGameScene();
         }
+        // ★ここを追加：LobbySceneに来たら自動でリセットする
+        else if (scene.name == "LobbyScene")
+        {
+            currentTurn = 0;
+            playerTotalMoney = 0;
+            hostMoney = 0;
+            isSetup = false;
+            Debug.Log("ロビーに戻ったのでゲームデータをリセットしました！");
+        }
     }
 
     void SetupGameScene()

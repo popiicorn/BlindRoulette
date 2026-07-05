@@ -1074,7 +1074,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraShake: {fileID: 330585548}
-  maxTurns: 5
+  maxTurns: 1
   turnTime: 10
   player: {fileID: 390336054}
   hostMoney: 0
