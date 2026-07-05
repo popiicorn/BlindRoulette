@@ -9,7 +9,7 @@ public class ResultManager : MonoBehaviour
     {
         // GameManager から結果を取得して表示
         int finalMoney = GameManager.Instance.GetFinalPlayerMoney();
-        resultText.text = $"今回の獲得金額: {finalMoney}円";
+        resultText.text = $"今回の獲得金額: {finalMoney.ToString("#,0")}円";
     }
 
     // 「タイトルに戻る」や「もう一度遊ぶ」ボタン用

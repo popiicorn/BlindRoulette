@@ -1087,7 +1087,7 @@ MonoBehaviour:
   spawnPoint: {fileID: 1595461742}
   spawnRadiusX: 10
   spawnRadiusZ: 2
-  initialSpawnCount: 1
+  initialSpawnCount: 20
   additionalSpawnPerTurn: 0
   timerText: {fileID: 2089157377}
   playerMoneyText: {fileID: 666705310}

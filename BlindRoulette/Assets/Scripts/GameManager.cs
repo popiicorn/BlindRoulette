@@ -80,8 +80,8 @@ public class GameManager : MonoBehaviour
         currentTime -= Time.deltaTime;
 
         if (timerText != null) timerText.text = $"残り時間: {Mathf.CeilToInt(currentTime)}秒";
-        if (playerMoneyText != null) playerMoneyText.text = $"プレイヤー: {playerTotalMoney}円";
-        if (hostMoneyText != null) hostMoneyText.text = $"仕掛け人: {hostMoney}円";
+        if (playerMoneyText != null) playerMoneyText.text = $"プレイヤー: {playerTotalMoney.ToString("#,0")}円";
+        if (hostMoneyText != null) hostMoneyText.text = $"仕掛け人: {hostMoney.ToString("#,0")}円";
 
         if (currentTime <= 0)
         {
