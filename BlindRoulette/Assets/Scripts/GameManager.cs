@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public CameraShake cameraShake;
+    private bool isSetup = false; // クラスの先頭あたりに追加
 
     [Header("ゲーム設定")]
     public int maxTurns = 5;
@@ -62,11 +63,13 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // 最初のシーンで起動したとき、既にGameSceneなら即セットアップ
+        /* 
+        最初のシーンで起動したとき、既にGameSceneなら即セットアップ
         if (SceneManager.GetActiveScene().name == "GameScene")
         {
             SetupGameScene();
         }
+        */
     }
 
     void Update()
@@ -94,12 +97,16 @@ public class GameManager : MonoBehaviour
     {
         if (scene.name == "GameScene")
         {
+            isSetup = false;
             SetupGameScene();
         }
     }
 
     void SetupGameScene()
     {
+        if (isSetup) return; // すでにセットアップ済みなら何もしない
+        isSetup = true;
+
         // 1. 各種UIやオブジェクトの再検索
         timerText = GameObject.Find("TimerText")?.GetComponent<TextMeshProUGUI>();
         playerMoneyText = GameObject.Find("PlayerMoneyText")?.GetComponent<TextMeshProUGUI>();
@@ -135,13 +142,19 @@ public class GameManager : MonoBehaviour
     void StartNextTurn()
     {
         currentTurn++;
+        Debug.Log("★現在のターン数: " + currentTurn); // これで確認します！
+
         if (currentTurn > maxTurns)
         {
-            if (timerText != null) timerText.text = "ゲーム終了！";
+            Debug.Log("★最大ターンを超えたのでリザルトへ行きます！");
+            CheckTurnResult();
             return;
         }
 
-        doubleRoom = Random.Range(1, 6);
+        // ...以下、宝生成などの処理
+    
+
+    doubleRoom = Random.Range(1, 6);
 
         for (int i = 0; i < treasuresToSpawnNextTurn; i++)
         {
@@ -339,6 +352,10 @@ public class GameManager : MonoBehaviour
     // ゲーム開始ボタンが押された時などに呼ぶ
     public void StartGameFromSelection()
     {
+        isSetup = false; // ここでリセット！
+        currentTurn = 0;
+        playerTotalMoney = 0;
+
         // ターンをカウントアップして、GameSceneへ移動する
         // currentTurn++; // ターンを進める
         SceneManager.LoadScene("GameScene");
