@@ -237,10 +237,14 @@ public class GameManager : MonoBehaviour
         if (cameraShake != null) cameraShake.PlayShake(0.5f, 0.3f);
 
         // ★ここに追加！
-        if (player != null && player.currentRoom == room.roomNumber)
+        if (player != null)
         {
-            playerTotalMoney = 0;
-            Debug.Log("爆発に巻き込まれた！所持金が0になりました！");
+            // 爆発した部屋にいる、または廊下・ロビー（部屋0）にいるなら没収
+            if (player.currentRoom == room.roomNumber || player.currentRoom == 0)
+            {
+                playerTotalMoney = 0;
+                Debug.Log("爆発に巻き込まれた、または逃げ場を失った！所持金が0になりました！");
+            }
         }
         // ★ここまで
 
@@ -352,5 +356,11 @@ public class GameManager : MonoBehaviour
             // 抽選へ
             SceneManager.LoadScene("SelectionScene");
         }
+    }
+
+    // GameManager.cs に追加
+    public int GetFinalPlayerMoney()
+    {
+        return playerTotalMoney;
     }
 }
