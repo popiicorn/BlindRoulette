@@ -201,6 +201,14 @@ public class GameManager : MonoBehaviour
         Instantiate(explosionPrefab, room.transform.position, Quaternion.identity);
         if (cameraShake != null) cameraShake.PlayShake(0.5f, 0.3f);
 
+        // ★ここに追加！
+        if (player != null && player.currentRoom == room.roomNumber)
+        {
+            playerTotalMoney = 0;
+            Debug.Log("爆発に巻き込まれた！所持金が0になりました！");
+        }
+        // ★ここまで
+
         TreasureBox[] allTreasures = FindObjectsOfType<TreasureBox>();
         int playerMemberCount = 1;
 
