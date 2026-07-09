@@ -44,7 +44,7 @@ public class TreasureBox : MonoBehaviour
             }
 
             transform.SetParent(playerTransform);
-            transform.localPosition = new Vector3(0, 1.5f, 0);
+            transform.localPosition = new Vector3(0, 2.5f, 0);
 
             if (data != null)
             {
