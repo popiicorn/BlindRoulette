@@ -15,6 +15,23 @@ public class PlayerController : MonoBehaviour
     private Rigidbody rb;
     private Vector3 moveInput;
 
+    public Animator anim; // インスペクターで、キャラのAnimatorをここにドラッグ＆ドロップしてね
+
+    // （既存のコードはそのままにして、下の方に追加してください）
+
+    // この関数を呼ぶと、アニメーションが変わるようになります
+    public void UpdateAnimation(bool moving, bool falling)
+    {
+        if (anim != null)
+        {
+            anim.SetBool("isMoving", moving);
+            anim.SetBool("isFalling", falling);
+
+            // ★ここを追加！今の状況をコンソールに表示
+            Debug.Log($"アニメ命令: Moving={moving}, Falling={falling}");
+        }
+    }
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -50,9 +67,20 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        //Debug.Log("Updateが動いています！");
+
         float moveX = Input.GetAxisRaw("Horizontal");
         float moveZ = Input.GetAxisRaw("Vertical");
         moveInput = new Vector3(moveX, 0f, moveZ).normalized;
+
+        // ★追加：移動入力があるか判定
+        bool isMoving = moveInput.magnitude > 0.1f;
+        if (anim != null && !anim.GetBool("isFalling"))
+        {
+            anim.SetBool("isMoving", isMoving);
+            // ※ここでは isFalling を操作しない（爆発した時だけ操作する）
+
+        }
 
         // ★追加：移動入力があるときだけキャラクターをその方向へ向かせる
         if (moveInput.magnitude > 0.1f)

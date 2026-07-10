@@ -262,6 +262,7 @@ public class GameManager : MonoBehaviour
         if (player != null && (player.currentRoom == room.roomNumber || player.currentRoom == 0))
         {
             playerTotalMoney = 0;
+            player.UpdateAnimation(false, true);
             Debug.Log("爆発に巻き込まれた！所持金が没収されました！");
 
             Rigidbody rb = player.GetComponent<Rigidbody>();
@@ -309,6 +310,9 @@ public class GameManager : MonoBehaviour
         }
 
         yield return new WaitForSeconds(3.0f);
+
+        if (player != null) player.UpdateAnimation(false, false);
+
         CheckTurnResult();
     }
 

@@ -426,7 +426,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2352974409916930473}
   - component: {fileID: 3354072639957532570}
-  - component: {fileID: 1169034298436572407}
+  - component: {fileID: 4579977298141084402}
   - component: {fileID: 2215763969984502198}
   - component: {fileID: 620898791870375201}
   m_Layer: 0
@@ -463,7 +463,7 @@ Animator:
   m_GameObject: {fileID: 3187384679435710046}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: f9f65d468731bcf4fba794d064637f84, type: 3}
-  m_Controller: {fileID: 9100000, guid: dd9b07c29b5310946a030aab4c3a971e, type: 2}
+  m_Controller: {fileID: 9100000, guid: 98e85064b8a6c234aa3b162d87bfae97, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -475,8 +475,8 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!65 &1169034298436572407
-BoxCollider:
+--- !u!136 &4579977298141084402
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -493,8 +493,10 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 2.4, z: 1}
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2.31
+  m_Direction: 1
   m_Center: {x: 0, y: 1.2, z: 0}
 --- !u!54 &2215763969984502198
 Rigidbody:
@@ -537,6 +539,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 7
   currentRoom: 0
+  anim: {fileID: 0}
 --- !u!1 &3199758921364783846
 GameObject:
   m_ObjectHideFlags: 0
