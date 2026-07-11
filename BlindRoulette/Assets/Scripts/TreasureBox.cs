@@ -48,7 +48,7 @@ public class TreasureBox : MonoBehaviour
         else if (!isCarried && playerTransform != null && Input.GetKeyDown(KeyCode.Space))
         {
             float dist = Vector3.Distance(transform.position, playerTransform.position);
-            if (dist <= 1.5f) // この 2.0f が拾える距離。もっと広げたければ 3.0f などにする！
+            if (dist <= 1.2f) // この 2.0f が拾える距離。もっと広げたければ 3.0f などにする！
             {
                 PickUp(playerTransform);
             }
