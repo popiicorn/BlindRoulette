@@ -130,25 +130,36 @@ public class TreasureBox : MonoBehaviour
         }
     }
 
-    // TreasureBox.cs に追加
+    // TreasureBox.cs
     public void UpdateRoom(int newRoomNumber)
     {
+        // すでに同じ部屋なら何もしない
+        if (currentRoom == newRoomNumber) return;
+
+        // 1. 全ての部屋を取得して、正しい部屋を探す
         RoomDetector[] allRooms = FindObjectsOfType<RoomDetector>();
 
+        // 2. 「今の部屋(currentRoom)」のリストから自分を削除する
         foreach (var room in allRooms)
         {
-            // ここが重要！「今の部屋番号と同じならリストから削除してね」という命令
             if (room.roomNumber == currentRoom)
             {
-                room.RegisterTreasure(this, false); // false = 「削除」という意味
-            }
-
-            // 新しい部屋への登録処理
-            if (room.roomNumber == newRoomNumber)
-            {
-                room.RegisterTreasure(this, true); // true = 「追加」という意味
+                room.RegisterTreasure(this, false); // 削除
+                Debug.Log($"[カウント] 部屋{currentRoom}から削除: {name}");
             }
         }
+
+        // 3. 部屋番号を更新
         currentRoom = newRoomNumber;
+
+        // 4. 「新しい部屋(newRoomNumber)」のリストに自分を追加する
+        foreach (var room in allRooms)
+        {
+            if (room.roomNumber == newRoomNumber)
+            {
+                room.RegisterTreasure(this, true); // 追加
+                Debug.Log($"[カウント] 部屋{newRoomNumber}に追加: {name}");
+            }
+        }
     }
 }

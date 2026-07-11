@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using System.Collections; // ★これが必要！追加してください
+using System.Collections.Generic; // もしあればそのままにしてOKです
 
 public class PlayerController : MonoBehaviour
 {
@@ -108,6 +110,26 @@ public class PlayerController : MonoBehaviour
         currentSpeedMultiplier = multiplier;
         Debug.Log($"プレイヤーの速度倍率が {multiplier} に変更されました！");
     }
+
+    void ThrowTreasure()
+    {
+        // ...宝を投げる処理...
+
+        // 投げた後に、宝箱に「自分の足元（または当たった先）の部屋をチェックしろ」と命令
+        TreasureBox box = GetComponentInChildren<TreasureBox>();
+        if (box != null)
+        {
+            // 投げた後に少し遅らせて再判定させると確実です
+            StartCoroutine(DelayedRoomUpdate(box));
+        }
+    }
+
+    IEnumerator DelayedRoomUpdate(TreasureBox box)
+    {
+        yield return new WaitForSeconds(0.1f); // 投げた直後の位置で判定
+                                               // 宝箱の周囲にRoomDetectorがあるか確認して部屋番号を更新するロジック
+    }
+
 
 
 }
