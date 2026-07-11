@@ -173,7 +173,12 @@ public class GameManager : MonoBehaviour
 
             Vector3 spawnPos = (spawnPoint != null ? spawnPoint.position : Vector3.zero) + new Vector3(randomX, randomY, randomZ);
             TreasureData selectedTreasure = ChooseRandomTreasure();
-            Instantiate(selectedTreasure.prefab, spawnPos, Quaternion.identity);
+
+            GameObject boxObj = Instantiate(selectedTreasure.prefab, spawnPos, Quaternion.identity);
+            TreasureBox box = boxObj.GetComponent<TreasureBox>();
+
+            // 生成された宝箱を「ロビー（0）」として登録（これで最初の金額表示が正しくなります）
+            box.UpdateRoom(0);
         }
 
         treasuresToSpawnNextTurn = additionalSpawnPerTurn;
@@ -234,7 +239,11 @@ public class GameManager : MonoBehaviour
             if (door != null)
             {
                 Animator anim = door.GetComponentInChildren<Animator>();
-                if (anim != null) anim.SetTrigger("Close");
+                if (anim != null)
+                {
+                    // Trigger ではなく Bool で「閉まっている状態」をONにする
+                    anim.SetBool("Closed", true);
+                }
             }
         }
 

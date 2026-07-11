@@ -81,6 +81,8 @@ public class TreasureBox : MonoBehaviour
             Vector3 throwDirection = player.forward * 5f + Vector3.up * 2f;
             rb.AddForce(throwDirection, ForceMode.Impulse);
         }
+
+        UpdateRoom(roomNumber);
     }
 
     public bool IsCarried()
@@ -101,7 +103,7 @@ public class TreasureBox : MonoBehaviour
         RoomDetector room = other.GetComponent<RoomDetector>();
         if (room != null)
         {
-            currentRoom = room.roomNumber;
+            UpdateRoom(room.roomNumber);
             Debug.Log($"{name} が自動で 【部屋 {currentRoom}】 にあると認識しました！");
         }
     }
@@ -129,9 +131,24 @@ public class TreasureBox : MonoBehaviour
     }
 
     // TreasureBox.cs に追加
-    public void UpdateRoom(int roomNumber)
+    public void UpdateRoom(int newRoomNumber)
     {
-        currentRoom = roomNumber;
-        Debug.Log($"{name} がプレイヤーに持たれたまま 【部屋 {currentRoom}】 に入りました！");
+        RoomDetector[] allRooms = FindObjectsOfType<RoomDetector>();
+
+        foreach (var room in allRooms)
+        {
+            // ここが重要！「今の部屋番号と同じならリストから削除してね」という命令
+            if (room.roomNumber == currentRoom)
+            {
+                room.RegisterTreasure(this, false); // false = 「削除」という意味
+            }
+
+            // 新しい部屋への登録処理
+            if (room.roomNumber == newRoomNumber)
+            {
+                room.RegisterTreasure(this, true); // true = 「追加」という意味
+            }
+        }
+        currentRoom = newRoomNumber;
     }
 }
