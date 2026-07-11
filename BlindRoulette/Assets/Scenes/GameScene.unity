@@ -4585,14 +4585,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6378207671594616785, guid: a97b2cb1c2dcd5343919a8fb62f488a2, type: 3}
-      propertyPath: m_WarningMessage
-      value: "\nBinding warning: Some generic clip(s) animate transforms that are
-        already bound by a Humanoid avatar. These transforms can only be changed
-        by Humanoid clips.\n\tTransform 'Root'\n\tTransform 'Spine1'\n\tTransform
-        'LeftUpLeg'\n\tTransform 'Neck'\n\tTransform 'LeftForeArm'\n\tTransform 'RightUpLeg'\n\tTransform
-        'Head'\n\tTransform 'Spine'\n\tTransform 'RightLeg'\n\tTransform 'RightArm'\n\tand
-        more ...\n\tFrom animation clip 'mixamo.com'"
+    - target: {fileID: 4847210016262537479, guid: a97b2cb1c2dcd5343919a8fb62f488a2, type: 3}
+      propertyPath: m_Radius
+      value: 0.32
       objectReference: {fileID: 0}
     - target: {fileID: 7190392360658972332, guid: a97b2cb1c2dcd5343919a8fb62f488a2, type: 3}
       propertyPath: m_Name

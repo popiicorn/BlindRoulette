@@ -26,29 +26,31 @@ public class TreasureBox : MonoBehaviour
 
     void Update()
     {
+        // ★プレイヤーを自動で見つける（既に playerTransform がある場合はそれを使う）
+        if (playerTransform == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null) playerTransform = playerObj.transform;
+        }
+
+        // 宝を投げる処理（isCarried が true なら）
         if (isCarried && Input.GetKeyDown(KeyCode.Space))
         {
-            Drop(transform.parent.GetComponent<PlayerController>().currentRoom);
-        }
-        else if (!isCarried && isPlayerInRange && Input.GetKeyDown(KeyCode.Space))
-        {
-            isCarried = true;
-
-            if (rb != null) rb.isKinematic = true;
-
-            // ★ここを修正！：コライダーを消すのではなく、プレイヤーとの衝突を無視させる！
-            Collider playerCol = playerTransform.GetComponent<Collider>();
-            foreach (Collider col in GetComponents<Collider>())
+            int currentRoom = 0;
+            if (playerTransform != null)
             {
-                if (!col.isTrigger) Physics.IgnoreCollision(col, playerCol, true);
+                var pc = playerTransform.GetComponent<PlayerController>();
+                if (pc != null) currentRoom = pc.currentRoom;
             }
-
-            transform.SetParent(playerTransform);
-            transform.localPosition = new Vector3(0, 2.5f, 0);
-
-            if (data != null)
+            Drop(currentRoom);
+        }
+        // ★拾う処理（isCarried が false で、距離が2.0以内なら）
+        else if (!isCarried && playerTransform != null && Input.GetKeyDown(KeyCode.Space))
+        {
+            float dist = Vector3.Distance(transform.position, playerTransform.position);
+            if (dist <= 1.5f) // この 2.0f が拾える距離。もっと広げたければ 3.0f などにする！
             {
-                playerTransform.GetComponent<PlayerController>().SetSpeedMultiplier(data.moveSpeedRate);
+                PickUp(playerTransform);
             }
         }
     }
@@ -160,6 +162,29 @@ public class TreasureBox : MonoBehaviour
                 room.RegisterTreasure(this, true); // 追加
                 Debug.Log($"[カウント] 部屋{newRoomNumber}に追加: {name}");
             }
+        }
+    }
+
+    public void PickUp(Transform targetPlayer)
+    {
+        isCarried = true;
+        playerTransform = targetPlayer;
+
+        if (rb != null) rb.isKinematic = true;
+
+        // 衝突無視の処理
+        Collider playerCol = playerTransform.GetComponent<Collider>();
+        foreach (Collider col in GetComponents<Collider>())
+        {
+            if (!col.isTrigger) Physics.IgnoreCollision(col, playerCol, true);
+        }
+
+        transform.SetParent(playerTransform);
+        transform.localPosition = new Vector3(0, 2.5f, 0);
+
+        if (data != null && playerTransform != null)
+        {
+            playerTransform.GetComponent<PlayerController>().SetSpeedMultiplier(data.moveSpeedRate);
         }
     }
 }
