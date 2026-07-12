@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6444926747750190583}
   - component: {fileID: 6713885266524815951}
+  - component: {fileID: 3705836195624911157}
   m_Layer: 0
   m_Name: RoomSensor
   m_TagString: Untagged
@@ -51,8 +52,20 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
+  m_Size: {x: 1.45, y: 1.6, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &3705836195624911157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3265018332826394023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b163a81fcad213841b212031c6f9d4eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3618065813406968794
 GameObject:
   m_ObjectHideFlags: 0

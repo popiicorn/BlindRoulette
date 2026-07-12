@@ -59,24 +59,31 @@ public class TreasureBox : MonoBehaviour
     {
         isCarried = false;
         currentRoom = roomNumber;
+
+        // ★ここで1回だけ宣言すればOK！
         Transform player = transform.parent;
 
-        // ★ここを修正！：投げる時は、プレイヤーとの衝突無視を解除する
+        // プレイヤーが持っていない状態に戻す処理
         if (player != null)
         {
+            var pc = player.GetComponent<PlayerController>();
+            if (pc != null)
+            {
+                pc.isHoldingTreasure = false;
+                pc.SetSpeedMultiplier(1.0f); // ついでに速度戻し処理もここに入れました
+            }
+
+            // プレイヤーとの衝突無視を解除
             Collider playerCol = player.GetComponent<Collider>();
             foreach (Collider col in GetComponents<Collider>())
             {
                 if (!col.isTrigger) Physics.IgnoreCollision(col, playerCol, false);
             }
-            player.GetComponent<PlayerController>().SetSpeedMultiplier(1.0f);
         }
 
         transform.SetParent(null);
 
         if (rb != null) rb.isKinematic = false;
-
-        // ★ここも削除！：もうColliderのオンオフは不要です
 
         if (player != null)
         {
@@ -94,19 +101,12 @@ public class TreasureBox : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        // 1. プレイヤーが近づいたときの判定
+        // プレイヤーの判定だけを残す
         if (other.CompareTag("Player"))
         {
             isPlayerInRange = true;
             playerTransform = other.transform;
-            Debug.Log($"{name} が拾える範囲に入りました！");
-        }
-
-        // 2. 部屋の判定（RoomDetector）
-        RoomDetector room = other.GetComponent<RoomDetector>();
-        if (room != null)
-        {
-            UpdateRoom(room.roomNumber);
+            Debug.Log("プレイヤーが範囲に入りました");
         }
     }
 
@@ -167,6 +167,14 @@ public class TreasureBox : MonoBehaviour
 
     public void PickUp(Transform targetPlayer)
     {
+        // ★追加：プレイヤーのPlayerControllerを取得して、既に持っていないか確認
+        var pc = targetPlayer.GetComponent<PlayerController>();
+        if (pc != null && pc.isHoldingTreasure)
+        {
+            Debug.Log("既に宝箱を持っています！");
+            return; // 持っている場合はここで中断！
+        }
+
         isCarried = true;
         playerTransform = targetPlayer;
 

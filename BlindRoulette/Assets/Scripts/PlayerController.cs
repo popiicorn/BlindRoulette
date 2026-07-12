@@ -19,6 +19,9 @@ public class PlayerController : MonoBehaviour
 
     public Animator anim; // インスペクターで、キャラのAnimatorをここにドラッグ＆ドロップしてね
 
+    // ★追加：今、宝箱を持っているかどうかのフラグ
+    public bool isHoldingTreasure = false;
+
     // （既存のコードはそのままにして、下の方に追加してください）
 
     // この関数を呼ぶと、アニメーションが変わるようになります
