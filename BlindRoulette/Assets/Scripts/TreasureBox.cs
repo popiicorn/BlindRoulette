@@ -12,6 +12,7 @@ public class TreasureBox : MonoBehaviour
     private bool isPlayerInRange = false;
     private Transform playerTransform;
     private Rigidbody rb;
+    private bool isPlayerInTrigger = false; // ★新しい判定フラグ
 
     void Start()
     {
@@ -44,11 +45,10 @@ public class TreasureBox : MonoBehaviour
             }
             Drop(currentRoom);
         }
-        // ★拾う処理（isCarried が false で、距離が2.0以内なら）
-        else if (!isCarried && playerTransform != null && Input.GetKeyDown(KeyCode.Space))
+        // ★拾う処理：距離ではなく、OnTriggerEnterで判定された isPlayerInRange を使う
+        else if (!isCarried && isPlayerInRange && Input.GetKeyDown(KeyCode.Space))
         {
-            float dist = Vector3.Distance(transform.position, playerTransform.position);
-            if (dist <= 1.2f) // この 2.0f が拾える距離。もっと広げたければ 3.0f などにする！
+            if (playerTransform != null)
             {
                 PickUp(playerTransform);
             }
@@ -94,19 +94,19 @@ public class TreasureBox : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        // 【既存の処理】プレイヤーが近づいたときの判定
+        // 1. プレイヤーが近づいたときの判定
         if (other.CompareTag("Player"))
         {
             isPlayerInRange = true;
             playerTransform = other.transform;
+            Debug.Log($"{name} が拾える範囲に入りました！");
         }
 
-        // ★【ここを追加！】宝箱が部屋（RoomDetector）に触れたら、その部屋番号を自動で記憶する
+        // 2. 部屋の判定（RoomDetector）
         RoomDetector room = other.GetComponent<RoomDetector>();
         if (room != null)
         {
             UpdateRoom(room.roomNumber);
-            Debug.Log($"{name} が自動で 【部屋 {currentRoom}】 にあると認識しました！");
         }
     }
 

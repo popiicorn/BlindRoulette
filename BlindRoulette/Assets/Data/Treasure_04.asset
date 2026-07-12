@@ -16,4 +16,4 @@ MonoBehaviour:
   moneyAmount: 50000
   moveSpeedRate: 0.8
   spawnWeight: 10
-  prefab: {fileID: 3618065813406968794, guid: 13ec7b1f7ae125844bfefb56edad5119, type: 3}
+  prefab: {fileID: 3618065813406968794, guid: e52e6309a694ea74c9e0adeee39880e5, type: 3}
