@@ -1,15 +1,17 @@
 ﻿using UnityEngine;
 
-// これを書くことで、Unity上でこのデータファイルを作成できるようになります
-[CreateAssetMenu(fileName = "NewTreasure", menuName = "Treasure/TreasureData")]
+// ファイル名は TreasureData.cs のままでもOK
+[CreateAssetMenu(fileName = "NewItem", menuName = "Item/ItemData")]
 public class TreasureData : ScriptableObject
 {
     [Header("基本情報")]
-    public string itemName;       // アイテムの名前（例：札束、金塊）
-    public int moneyAmount;       // 獲得できる金額
-    public float moveSpeedRate = 1.0f; // 運ぶ時の速度倍率（1.0で通常）
+    public string itemName;
+    public GameObject prefab; // 実際の3Dモデル（プレハブ）
+
+    [Header("宝箱用データ（爆弾は0でOK）")]
+    public int moneyAmount;
+    public float moveSpeedRate = 1.0f;
 
     [Header("出現設定")]
-    public int spawnWeight = 10;  // 出現しやすさ（数字が大きいほど出やすい）
-    public GameObject prefab;     // 実際の3Dモデル（プレハブ）
+    public int spawnWeight = 10;
 }

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1178644038373025629}
   - component: {fileID: 7896288356037473541}
   - component: {fileID: 5674828793305729876}
+  - component: {fileID: 6052451862113366534}
   m_Layer: 0
   m_Name: SmokeBomb
   m_TagString: Bomb
@@ -151,6 +152,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   smokeEffectPrefab: {fileID: 4250298743439401460, guid: aa357c0e40a70d942a63013596dd16de, type: 3}
+--- !u!114 &6052451862113366534
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1813419529167196838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0df598b69cd13dc4e82c165e176cca05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: {fileID: 11400000, guid: f835ceb994a1ef74c8bde58c84cd0efe, type: 2}
+  currentRoom: 0
 --- !u!1 &2463053107710508823
 GameObject:
   m_ObjectHideFlags: 0
